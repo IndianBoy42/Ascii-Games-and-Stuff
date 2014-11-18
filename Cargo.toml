@@ -1,0 +1,10 @@
+[package]
+
+name = "gecko_games"
+version = "0.0.1"
+authors = ["anshuman"]
+
+build = "sh build.sh"
+
+[dependencies.tcod]
+git = "https://github.com/tomassedovic/tcod-rs.git"

@@ -1,0 +1,143 @@
+extern crate tcod;
+
+use self::tcod::{Key, Special, key_code};
+
+pub struct GameWorld {
+	bounds: Bounds,
+	exit: bool
+}
+
+impl GameWorld {
+	fn is_valid_pt(&self, p: Point) -> bool {
+		self.bounds.check(p)
+	}
+}
+
+pub enum GameEvent {
+    key_press(Key),
+    damage(AttackType),
+    interaction,
+}
+
+pub enum AttackType {
+	melee(i32),
+	ranged(i32),
+	magic(i32)
+}
+
+pub struct Bounds {
+	x: Range,
+	y: Range
+}
+
+pub struct Range {
+    pub max: i32,
+    pub min: i32
+}
+
+pub struct Size {
+	pub x: i32,
+	pub y: i32
+}
+
+impl Bounds {
+	fn size(&self) -> Size {
+		Size {
+			x: self.x.max - self.x.min,
+			y: self.y.max - self.y.min
+		}
+	}
+
+	fn checkX(&self, p: Point) -> bool {
+		p.x < self.x.max && p.x < self.x.min
+	}
+
+	fn checkY(&self, p: Point) -> bool {
+		p.y < self.y.max && p.y < self.y.min
+	}
+
+	fn check(&self, p: Point) -> bool {
+		self.checkX(p) && self.checkY(p)
+	}
+}
+
+pub struct Point {
+	pub x: i32,
+	pub y: i32
+}
+
+pub struct Vector {
+	pub x: i32,
+	pub y: i32
+}
+
+impl Point {
+	fn translateX(&mut self, d: i32) {
+		self.x = self.x + d;
+	}
+
+	fn translateY(&mut self, d: i32) {
+		self.y = self.y + d;
+	}
+
+	fn translate(&mut self, d: Vector) {
+		self.x = self.x + d.x;
+		self.y = self.y + d.y;
+	}
+
+	fn move_to(&self, d: Vector) -> Point {
+		Point {
+			x: self.x + d.x,
+			y: self.y + d.y
+		}
+	}
+}
+
+pub struct Object {
+	pub pos: Point,
+	pub char: char
+}
+
+pub trait Entity {
+	fn get_object(& self) -> Object;
+	fn get_obj(&mut self) -> O
+
+	fn get_health(&self) -> i16;
+
+	fn move_to(&mut self, v: Vector, w: GameWorld) {
+		let pos = &self.get_object().pos;
+		let try = pos.move_to(v);
+		if (w.is_valid_pt(try)) {
+			pos.translate(v);
+		}
+	}
+
+	fn update(&mut self, world: &mut GameWorld);
+	fn react(&mut self, world: &mut GameWorld, event: GameEvent);
+}
+
+pub struct Player {
+	pub character: Object,
+	pub health: i16, 
+	pub mana: i16	
+}
+
+impl Player {
+	fn react(&mut self, world: &mut GameWorld, event: GameEvent) {
+		match event {
+			key_press(k) => match k {
+				Special(key_code::Escape) => world.exit = true,
+				_ => {}
+			},
+			_ => {}
+		}
+	}
+}
+
+pub enum Data<'a> {
+	IntData(&'a str, i32),
+	FloatData(&'a str, f32),
+	StrData(&'a str, &'a str),
+	PairData(&'a str, Box<Data<'a>>, Box<Data<'a>>),
+	CompoundData(&'a str, Vec<Data<'a>>)
+}
